@@ -255,145 +255,32 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
 
     private Polyline mPolyline;
 
-    private void addPolylineInPlayGround() {
-        List<LatLng> list = readLatLngs();
-//        List<Integer> colorList = new ArrayList<>();
-//        List<BitmapDescriptor> bitmapDescriptors = new ArrayList<>();
-
-//        int[] colors = new int[]{Color.argb(67, 117, 129, 226), Color.argb(67, 227, 149, 103), Color.argb(67, 107, 209, 119)};
-
-        //用一个数组来存放纹理
-//        List<BitmapDescriptor> textureList = new ArrayList<>();
-//        textureList.add(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher));
-//
-//        List<Integer> texIndexList = new ArrayList<>();
-//        texIndexList.add(0);//对应上面的第0个纹理
-//        texIndexList.add(1);
-//        texIndexList.add(2);
-
-//        Random random = new Random();
-//        for (int i = 0; i < list.size(); i++) {
-//            colorList.add(colors[random.nextInt(3)]);
-//            bitmapDescriptors.add(textureList.get(0));
-//        }
-
-        mPolyline = aMap.addPolyline(new PolylineOptions().setCustomTexture(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher)) //setCustomTextureList(bitmapDescriptors)
-//				.setCustomTextureIndex(texIndexList)
-                .addAll(list)
-//                .useGradient(true)
-                .width(18));
-
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        builder.include(list.get(0));
-        builder.include(list.get(list.size() - 2));
-
-        aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
-    }
-
-    private double Lat_A = 39.97617053371078;
-    private double Lon_A = 116.3499049793749;
-
-    private double Lat_B = 39.977958856930286;
-    private double Lon_B = 116.34822159449203;
-
-    private double Lat_C = 39.979801430587926;
-    private double Lon_C = 116.34798818413954;
-
-    private double Lat_D = 39.980956549928244;
-    private double Lon_D = 116.3453513775533;
-
     private void addPolylinesWithColors() {
-        //四个点
-//        LatLng A = new LatLng(Lat_A + 0.0001, Lon_A + 0.0001);
-//        LatLng B = new LatLng(Lat_B + 0.0001, Lon_B + 0.0001);
-//        LatLng C = new LatLng(Lat_C + 0.0001, Lon_C + 0.0001);
-//        LatLng D = new LatLng(Lat_D + 0.0001, Lon_D + 0.0001);
-
         //用一个数组来存放颜色，四个点对应三段颜色
         List<Integer> colorList = new ArrayList<Integer>();
-//        colorList.add(Color.RED);
-//        colorList.add(Color.YELLOW);
-//        colorList.add(Color.GREEN);
-//		colorList.add(Color.BLACK);
 
         PolylineOptions options = new PolylineOptions();
-//        options.width(20);//设置宽度
 
-        //加入四个点
-//        options.add(A,B,C,D);
-//        List<LatLng> list = readLatLngs();
-//        options.addAll(list);
         for (int i = 0; i < coords.length; i += 2) {
-//            points.add(new LatLng(coords[i + 1], coords[i]));
             options.add(new LatLng(coords[i + 1], coords[i]));
         }
-        int[] colors = new int[]{Color.argb(255, 0, 255, 0),Color.argb(255, 255, 255, 0),Color.argb(255, 255, 0, 0)};
+        int[] colors = new int[]{Color.argb(255, 0, 255, 0), Color.argb(255, 255, 255, 0), Color.argb(255, 255, 0, 0)};
         Random random = new Random();
-        for (int i = 0; i < coords.length; i = i+2) {
-            int color = colors[random.nextInt(3)];
-//            colorList.add(color);//添加颜色
-            colorList.add(color);
-        }
-
-        //加入对应的颜色,使用colorValues 即表示使用多颜色，使用color表示使用单色线
-//        options.colorValues(colorList);
-
-//        aMap.addPolyline(options);
-        mPolyline=aMap.addPolyline(options.width(20)
-//                .addAll(list)
-                .colorValues(colorList).useGradient(false));
-    }
-    public void addPolylineInPlayGround(LatLng centerpoint) {
-        double r = 6371000.79;
-        int r1 = 50;
-        PolylineOptions options = new PolylineOptions();
-        int numpoints =36;
-        double phase = 2 * Math.PI / numpoints;
-        //颜色数组
-        List<Integer> colorList = new ArrayList<Integer>();
-        int[] colors = new int[]{Color.argb(255, 0, 255, 0),Color.argb(255, 255, 255, 0),Color.argb(255, 255, 0, 0)};
-        Random random = new Random();
-        //画图
-        for (int i = 0; i <numpoints; i++) {
-            double dx = (r1 * Math.cos(i*phase));
-            double dy = (r1*Math.sin(i*phase))*1.6;//乘以1.6 椭圆比例
-
-            double dlng = dx/(r*Math.cos(centerpoint.latitude*Math.PI/180)*Math.PI/180);
-            double dlat = dy/(r*Math.PI/180);
-            double newlng = centerpoint.longitude+dlng;
-
-            //跑道两边为直线
-            if (newlng<centerpoint.longitude - 0.00046) {
-                newlng = centerpoint.longitude - 0.00046;
-            }else if (newlng > centerpoint.longitude + 0.00046) {
-                newlng = centerpoint.longitude + 0.00046;
+        int color = 0;
+        for (int i = 0; i < coords.length; i++) {
+            if (i < 20) {
+                color = colors[1];
+            } else if (i < 40) {
+                color = colors[2];
+            } else {
+                color = colors[0];
             }
-            options.add(new LatLng(centerpoint.latitude+dlat,newlng));
-        }
-
-        //随机颜色赋值
-        for (int i = 0; i < numpoints; i = i+2) {
-            int color = colors[random.nextInt(3)];
-            colorList.add(color);//添加颜色
             colorList.add(color);
         }
-
-        //确保首位相接，添加后一个点及颜色与第一点相同
-        options.add(options.getPoints().get(0));
-        colorList.add(colorList.get(0));
-
-
-
-
-        List<Integer> colorListnew = new ArrayList<Integer>();
-        colorListnew.add(Color.RED);
-        colorListnew.add(Color.YELLOW);
-        colorListnew.add(Color.GREEN);
-        aMap.addPolyline(options.width(15)
+        mPolyline = aMap.addPolyline(options.width(20)
                 .colorValues(colorList).useGradient(true));
-
-        aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerpoint, 17));
     }
+
     private List<LatLng> readLatLngs() {
         List<LatLng> points = new ArrayList<>();
         for (int i = 0; i < coords.length; i += 2) {
@@ -402,6 +289,24 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
         return points;
     }
 
+//    private double[] coords1 = {116.307534,39.831976,
+//            116.307655,39.831983,
+//            116.307799,39.831973,
+//            116.307839,39.83208,
+//            116.307826,39.832177,
+//            116.307826,39.832437,
+//            116.307835,39.832648,
+//            116.30783,39.832876,
+//            116.30783,39.833084,
+//            116.307812,39.833462,
+//            116.307799,39.833604,
+//            116.307897,39.833656,
+//            116.308162,39.833638,
+//            116.308463,39.833614,
+//            116.308917,39.833614,
+//            116.309258,39.833607,
+//            116.309357,39.833631
+//            };
     private double[] coords = {116.3499049793749, 39.97617053371078,
             116.34978804908442, 39.97619854213431, 116.349674596623,
             39.97623045687959, 116.34955525200917, 39.97626931100656,
@@ -459,12 +364,10 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
 
     public void startLine(View view) {
         addPolylinesWithColors();
-//        addPolylineInPlayGround();
         startMove();
     }
 
     public void startMove() {
-
 
         if (mPolyline == null) {
             Toast.makeText(this, "请先设置路线", Toast.LENGTH_SHORT).show();
@@ -480,10 +383,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
 
         aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
 
-
-
         // 实例 MovingPointOverlay 对象
-        if(smoothMarker == null) {
+        if (smoothMarker == null) {
             // 设置 平滑移动的 图标
             marker = aMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher)));
             smoothMarker = new MovingPointOverlay(aMap, marker);
@@ -504,7 +405,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
         aMap.setInfoWindowAdapter(infoWindowAdapter);
         // 显示 infowindow
         marker.showInfoWindow();
-
         // 设置移动的监听事件  返回 距终点的距离  单位 米
         smoothMarker.setMoveListener(new MovingPointOverlay.MoveListener() {
             @Override
@@ -515,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
                         @Override
                         public void run() {
                             if (infoWindowLayout != null && title != null) {
-
+                                Log.e("=============", "run: "+distance );
                                 title.setText("距离终点还有： " + (int) distance + "米");
                             }
                         }
@@ -536,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
     private MovingPointOverlay smoothMarker;
     private Marker marker;
 
-    AMap.InfoWindowAdapter infoWindowAdapter = new AMap.InfoWindowAdapter(){
+    AMap.InfoWindowAdapter infoWindowAdapter = new AMap.InfoWindowAdapter() {
 
         // 个性化Marker的InfoWindow 视图
         // 如果这个方法返回null，则将会使用默认的信息窗口风格，内容将会调用getInfoContents(Marker)方法获取
@@ -558,10 +458,12 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
     LinearLayout infoWindowLayout;
     TextView title;
     TextView snippet;
+
     /**
      * 自定义View并且绑定数据方法
+     *
      * @param marker 点击的Marker对象
-     * @return  返回自定义窗口的视图
+     * @return 返回自定义窗口的视图
      */
     private View getInfoWindowView(Marker marker) {
         if (infoWindowLayout == null) {
