@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -42,7 +43,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity implements LocationSource, AMapLocationListener {
+public class MainActivity extends AppCompatActivity implements LocationSource {
 
     private MapView mMapView;
     MyLocationStyle myLocationStyle;
@@ -78,49 +79,14 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
             aMap = mMapView.getMap();
             myLocationStyle = new MyLocationStyle();
             myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);
-            // 设置圆形的边框颜色
             myLocationStyle.strokeColor(Color.argb(50, 30, 150, 180));
-            // 设置圆形的填充颜色
             myLocationStyle.radiusFillColor(Color.argb(50, 30, 150, 180));
-            // 设置圆形的边框粗细
             myLocationStyle.strokeWidth(1.0f);
-            //设置显示定位按钮 并且可以点击
             UiSettings settings = aMap.getUiSettings();
-            //设置了定位的监听
             aMap.setLocationSource(this);
-            // 是否显示定位按钮
             settings.setMyLocationButtonEnabled(true);
-            //显示定位层并且可以触发定位,默认是flase
             aMap.setMyLocationEnabled(true);
-            // 定位、且将视角移动到地图中心点,定位点依照设备方向旋转,并且会跟随设备移动。
         }
-        //开始定位
-        location();
-    }
-
-    private void location() {
-        //初始化定位
-        mlocationClient = new AMapLocationClient(getApplicationContext());
-        //设置定位回调监听
-        mlocationClient.setLocationListener(this);
-        //初始化定位参数
-        mLocationOption = new AMapLocationClientOption();
-        //设置定位模式为Hight_Accuracy高精度模式，Battery_Saving为低功耗模式，Device_Sensors是仅设备模式
-        mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-        //设置是否返回地址信息（默认返回地址信息）
-        mLocationOption.setNeedAddress(true);
-        //设置是否只定位一次,默认为false
-        mLocationOption.setOnceLocation(false);
-        //设置是否强制刷新WIFI，默认为强制刷新
-        mLocationOption.setWifiActiveScan(true);
-        //设置是否允许模拟位置,默认为false，不允许模拟位置
-        mLocationOption.setMockEnable(false);
-        //设置定位间隔,单位毫秒,默认为2000ms
-        mLocationOption.setInterval(2000);
-        //给定位客户端对象设置定位参数
-        mlocationClient.setLocationOption(mLocationOption);
-        //启动定位
-        mlocationClient.startLocation();
     }
 
     @Override
@@ -131,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
 
     @Override
     protected void onDestroy() {
-        //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
         mMapView.onDestroy();
         if (null != mlocationClient) {
             mlocationClient.onDestroy();
@@ -142,21 +107,18 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
     @Override
     protected void onResume() {
         super.onResume();
-        //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
         mMapView.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        //在activity执行onPause时执行mMapView.onPause ()，暂停地图的绘制
         mMapView.onPause();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        //在activity执行onSaveInstanceState时执行mMapView.onSaveInstanceState (outState)，保存地图当前的状态
         mMapView.onSaveInstanceState(outState);
     }
 
@@ -167,23 +129,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
     @Override
     public void activate(OnLocationChangedListener onLocationChangedListener) {
         mListener = onLocationChangedListener;
-//        if (mlocationClient == null) {
-//            //初始化定位
-//            mlocationClient = new AMapLocationClient(this);
-//            //初始化定位参数
-//            mLocationOption = new AMapLocationClientOption();
-//            //设置定位回调监听
-//            mlocationClient.setLocationListener(this);
-//            //设置为高精度定位模式
-//            mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-//            //设置定位参数
-//            mlocationClient.setLocationOption(mLocationOption);
-//            // 此方法为每隔固定时间会发起一次定位请求，为了减少电量消耗或网络流量消耗，
-//            // 注意设置合适的定位时间的间隔（最小间隔支持为2000ms），并且在合适时间调用stopLocation()方法来取消定位请求
-//            // 在定位结束后，在合适的生命周期调用onDestroy()方法
-//            // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
-//            mlocationClient.startLocation();//启动定位
-//        }
     }
 
     @Override
@@ -196,67 +141,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
         mlocationClient = null;
     }
 
-    private boolean isFirstLoc = true;
-
-    @Override
-    public void onLocationChanged(AMapLocation aMapLocation) {
-        if (mListener != null && aMapLocation != null) {
-            if (aMapLocation != null && aMapLocation.getErrorCode() == 0) {
-                //定位成功回调信息，设置相关消息
-                aMapLocation.getLocationType();//获取当前定位结果来源，如网络定位结果，详见官方定位类型表
-                aMapLocation.getLatitude();//获取纬度
-                aMapLocation.getLongitude();//获取经度
-                aMapLocation.getAccuracy();//获取精度信息
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date date = new Date(aMapLocation.getTime());
-                df.format(date);//定位时间
-                aMapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息。
-                aMapLocation.getCountry();//国家信息
-                aMapLocation.getProvince();//省信息
-                aMapLocation.getCity();//城市信息
-                aMapLocation.getDistrict();//城区信息
-                aMapLocation.getStreet();//街道信息
-                aMapLocation.getStreetNum();//街道门牌号信息
-                aMapLocation.getCityCode();//城市编码
-                aMapLocation.getAdCode();//地区编码
-
-                // 如果不设置标志位，此时再拖动地图时，它会不断将地图移动到当前的位置
-                if (isFirstLoc) {
-                    //设置缩放级别
-                    aMap.moveCamera(CameraUpdateFactory.zoomTo(18));
-                    //将地图移动到定位点
-                    aMap.moveCamera(CameraUpdateFactory.changeLatLng(new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude())));
-                    //点击定位按钮 能够将地图的中心移动到定位点
-                    mListener.onLocationChanged(aMapLocation);
-                    //添加图钉
-                    // aMap.addMarker(getMarkerOptions(amapLocation));
-                    //获取定位信息
-                    StringBuffer buffer = new StringBuffer();
-                    buffer.append(aMapLocation.getCountry() + ""
-                            + aMapLocation.getProvince() + ""
-                            + aMapLocation.getCity() + ""
-                            + aMapLocation.getProvince() + ""
-                            + aMapLocation.getDistrict() + ""
-                            + aMapLocation.getStreet() + ""
-                            + aMapLocation.getStreetNum());
-                    Toast.makeText(getApplicationContext(), buffer.toString(), Toast.LENGTH_LONG).show();
-                    isFirstLoc = false;
-                    // 显示系统小蓝点
-                    mListener.onLocationChanged(aMapLocation);
-                }
-            } else {
-                Log.e("AmapError", "location Error, ErrCode:"
-                        + aMapLocation.getErrorCode() + ", errInfo:"
-                        + aMapLocation.getErrorInfo());
-                Toast.makeText(getApplicationContext(), "定位失败", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
     private Polyline mPolyline;
 
     private void addPolylinesWithColors() {
-        //用一个数组来存放颜色，四个点对应三段颜色
         List<Integer> colorList = new ArrayList<Integer>();
 
         PolylineOptions options = new PolylineOptions();
@@ -265,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
             options.add(new LatLng(coords[i + 1], coords[i]));
         }
         int[] colors = new int[]{Color.argb(255, 0, 255, 0), Color.argb(255, 255, 255, 0), Color.argb(255, 255, 0, 0)};
-        Random random = new Random();
         int color = 0;
         for (int i = 0; i < coords.length; i++) {
             if (i < 20) {
@@ -289,24 +175,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
         return points;
     }
 
-//    private double[] coords1 = {116.307534,39.831976,
-//            116.307655,39.831983,
-//            116.307799,39.831973,
-//            116.307839,39.83208,
-//            116.307826,39.832177,
-//            116.307826,39.832437,
-//            116.307835,39.832648,
-//            116.30783,39.832876,
-//            116.30783,39.833084,
-//            116.307812,39.833462,
-//            116.307799,39.833604,
-//            116.307897,39.833656,
-//            116.308162,39.833638,
-//            116.308463,39.833614,
-//            116.308917,39.833614,
-//            116.309258,39.833607,
-//            116.309357,39.833631
-//            };
     private double[] coords = {116.3499049793749, 39.97617053371078,
             116.34978804908442, 39.97619854213431, 116.349674596623,
             39.97623045687959, 116.34955525200917, 39.97626931100656,
@@ -327,39 +195,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
             , 116.34821304891533, 39.977652209132174, 116.34820923399242,
             39.977764016531076, 116.3482045955917, 39.97786190186833,
             116.34822159449203, 39.977958856930286, 116.3482256370537,
-            39.97807288885813, 116.3482098441266, 39.978170063673524,
-            116.34819564465377, 39.978266951404066, 116.34820541974412,
-            39.978380693859116, 116.34819672351216, 39.97848741209275,
-            116.34816588867105, 39.978593409607825, 116.34818489339459,
-            39.97870216883567, 116.34818473446943, 39.978797222300166,
-            116.34817728972234, 39.978893492422685, 116.34816491505472,
-            39.978997133775266, 116.34815408537773, 39.97911413849568,
-            116.34812908154862, 39.97920553614499, 116.34809495907906,
-            39.979308267469264, 116.34805113358091, 39.97939658036473,
-            116.3480310509613, 39.979491697188685, 116.3480082124968,
-            39.979588529006875, 116.34799530586834, 39.979685789111635,
-            116.34798818413954, 39.979801430587926, 116.3479996420353,
-            39.97990758587515, 116.34798697544538, 39.980000796262615,
-            116.3479912988137, 39.980116318796085, 116.34799204219203,
-            39.98021407403913, 116.34798535084123, 39.980325006125696,
-            116.34797702460183, 39.98042511477518, 116.34796288754136,
-            39.98054129336908, 116.34797509821901, 39.980656820423505,
-            116.34793922017285, 39.98074576792626, 116.34792586413015,
-            39.98085620772756, 116.3478962642899, 39.98098214824056,
-            116.34782449883967, 39.98108306010269, 116.34774758827285,
-            39.98115277119176, 116.34761476652932, 39.98115430642997,
-            116.34749135408349, 39.98114590845294, 116.34734772765582,
-            39.98114337322547, 116.34722082902628, 39.98115066909245,
-            116.34708205250223, 39.98114532232906, 116.346963237696,
-            39.98112245161927, 116.34681500222743, 39.981136637759604,
-            116.34669622104072, 39.981146248090866, 116.34658043260109,
-            39.98112495260716, 116.34643721418927, 39.9811107163792,
-            116.34631638374302, 39.981085081075676, 116.34614782996252,
-            39.98108046779486, 116.3460256053666, 39.981049089345206,
-            116.34588814050122, 39.98104839362087, 116.34575119741586,
-            39.9810544889668, 116.34562885420186, 39.981040940565734,
-            116.34549232235582, 39.98105271658809, 116.34537348820508,
-            39.981052294975264, 116.3453513775533, 39.980956549928244
+            39.97807288885813
     };
 
     public void startLine(View view) {
@@ -373,10 +209,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
             Toast.makeText(this, "请先设置路线", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // 读取轨迹点
         List<LatLng> points = readLatLngs();
-        // 构建 轨迹的显示区域
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(points.get(0));
         builder.include(points.get(points.size() - 2));
@@ -415,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
                         @Override
                         public void run() {
                             if (infoWindowLayout != null && title != null) {
-                                Log.e("=============", "run: "+distance );
+                                Log.e("=============", "run: " + distance);
                                 title.setText("距离终点还有： " + (int) distance + "米");
                             }
                         }
@@ -483,4 +316,30 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
         return infoWindowLayout;
     }
 
+    public void addMarker(View view) {
+        setUpMap();
+    }
+
+    List<Marker> markerList = new ArrayList<>();
+
+    private void setUpMap() {
+        ArrayList<BitmapDescriptor> normalGiflist = new ArrayList<>();
+        normalGiflist.add(BitmapDescriptorFactory.fromResource(R.drawable.icon_normal1));
+        normalGiflist.add(BitmapDescriptorFactory.fromResource(R.drawable.icon_normal17));
+        normalGiflist.add(BitmapDescriptorFactory.fromResource(R.drawable.icon_normal38));
+
+        for (int i = 0; i < coords.length; i += 2) {
+            Marker marker = aMap.addMarker(new MarkerOptions().position(new LatLng(coords[i + 1], coords[i])).anchor(0.5f, 0.5f).icons(normalGiflist).period(3));
+            markerList.add(marker);
+        }
+    }
+
+    public void removeMarker(View view) {
+        for (Marker marker :markerList) {
+            marker.remove();
+        }
+//        aMap.clear();
+//        addPolylinesWithColors();
+//        startMove();
+    }
 }
