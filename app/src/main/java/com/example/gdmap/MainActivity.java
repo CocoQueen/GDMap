@@ -481,4 +481,5 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
             }
         }
     }
+
 }
