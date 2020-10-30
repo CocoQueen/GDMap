@@ -196,9 +196,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
         int[] colors = new int[]{Color.argb(255, 0, 255, 0), Color.argb(255, 255, 255, 0), Color.argb(255, 255, 0, 0)};
         int color = 0;
         for (int i = 0; i < coords.length; i++) {
-            if (i < 20) {
+            if (i < 5) {
                 color = colors[1];
-            } else if (i < 40) {
+            } else if (i < 10) {
                 color = colors[2];
             } else {
                 color = colors[0];
